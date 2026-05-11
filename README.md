@@ -1,0 +1,69 @@
+Smart Energy Dashboard Pro ⚡
+An automated real-time monitoring and load control system for modern smart homes. This application bridges Python backend logic with a high-performance QML interface to provide live energy insights and automated safety controls.
+
+🚀 Key Features
+Real-Time Tracking: Live visualization of Voltage, Current, and Wattage for multiple appliances.
+
+Automated Load Shedding: Automatically turns off high-power, non-essential devices if consumption exceeds a safety limit (e.g., 3000W).
+
+Peak Hour Management: Dynamic alerts and power restrictions during high-tariff periods (e.g., 7:00 PM – 11:00 PM).
+
+Cost Estimation: Real-time billing calculation in PKR based on dynamic unit rates.
+
+Usage History & Reports: Persistent data logging with the ability to export professional PDF reports.
+
+Secure Authentication: Integrated login system and password management utility.
+
+📂 Project Structure
+Plaintext
+
+SmartEnergyProject/
+├── main.py                 # Core application & Bridge logic
+├── change_pass.py          # Utility for updating login credentials
+├── requirements.txt        # Required Python libraries
+├── energy_system.db        # SQLite database (Stores history and settings)(created automatically when main.py runs)
+├── backend/                # Logic Layer
+│   ├── data_generator.py   # Simulates live sensor data
+│   ├── db_manager.py       # Database operations (SQL)
+│   └── energy_logic.py     # Energy math and billing logic
+└── frontend/               # View Layer
+    └── dashboard.qml       # QML User Interface design
+🛠️ Installation & Setup
+Clone/Download the project folder.
+
+Create a Virtual Environment:
+
+Bash
+
+python -m venv venv
+Activate the Environment:
+
+Windows: venv\Scripts\activate
+
+Mac/Linux: source venv/bin/activate
+
+Install Dependencies:
+
+Bash
+
+pip install -r requirements.txt
+🚦 Running the Application
+To experience the full live simulation, you must run two processes:
+
+Start the Data Simulator:
+Open a terminal and run:
+
+Bash
+
+python backend/data_generator.py
+Launch the Dashboard:
+Open a second terminal and run:
+
+Bash
+
+python main.py
+🔐 Default Credentials
+Username: admin
+
+Password: admin123
+(Use change_pass.py to update these for security).
