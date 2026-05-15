@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy Dashboard Pro</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: #111111;
+            --card-bg: #161616;
+            --card-border: #222222;
+            --cyan-glow: #00f2ff;
+            --green-text: #00ff88;
+            --red-btn: #c62828;
+            --green-btn: #2e7d32;
+            --text-main: #ffffff;
+            --text-muted: #666666;
+            --input-bg: #1a1a1a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- LOGIN SCREEN OVERLAY --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.4s ease;
+        }
+
+        .login-box {
+            width: 350px;
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .login-box h2 {
+            color: var(--cyan-glow);
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .login-field {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid #333333;
+            border-radius: 6px;
+            padding: 12px 15px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .login-field:focus {
+            border-color: var(--cyan-glow);
+        }
+
+        .login-btn {
+            width: 100%;
+            background-color: var(--cyan-glow);
+            border: none;
+            border-radius: 6px;
+            padding: 14px;
+            color: #000000;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+        }
+
+        .login-error {
+            color: #ff3333;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* --- DASHBOARD WRAPPER --- */
+        #dashboard-container {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            padding: 25px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* --- TOP HEADER BAR --- */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .settings-trigger-btn {
+            background-color: #1a2b2e;
+            border: 1px solid var(--cyan-glow);
+            border-radius: 4px;
+            color: var(--cyan-glow);
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .settings-trigger-btn:hover {
+            background-color: rgba(0, 242, 255, 0.1);
+        }
+
+        .brand-title {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .peak-status-panel {
+            text-align: right;
+        }
+
+        .peak-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+        }
+
+        .peak-timer {
+            font-family: monospace;
+            font-size: 1.4rem;
+            color: var(--cyan-glow);
+            font-weight: 700;
+        }
+
+        /* --- HERO RING GAUGES --- */
+        .hero-gauge-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .circle-gauge-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .circle-gauge-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .circle-bg-track {
+            fill: none;
+            stroke: #111111;
+            stroke-width: 6;
+        }
+
+        .circle-active-glow {
+            fill: none;
+            stroke: var(--cyan-glow);
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+            filter: drop-shadow(0px 0px 6px rgba(0, 242, 255, 0.6));
+        }
+
+        .gauge-center-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gauge-center-content .label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .gauge-center-content .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* --- GRID COMMAND CENTER --- */
+        .section-divider {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .horizontal-rule {
+            border: 0;
+            height: 1px;
+            background: #222222;
+        }
+
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1100px) {
+            .command-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 800px) {
+            .command-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 500px) {
+            .command-grid { grid-template-columns: 1fr; }
+        }
+
+        .device-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 135px;
+            position: relative;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .device-card.active-state {
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+        }
+
+        .card-header-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .favorite-star {
+            color: #ffd700;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .device-card.active-state .favorite-star {
+            display: inline;
+        }
+
+        .device-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .device-card.active-state .device-title {
+            color: var(--text-main);
+        }
+
+        .device-wattage {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .device-card.active-state .device-wattage {
+            color: var(--cyan-glow);
+        }
+
+        .card-action-btn {
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #ffffff;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: opacity 0.15s;
+        }
+
+        .card-action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .card-action-btn.turn-off {
+            background-color: var(--red-btn);
+        }
+
+        .card-action-btn.turn-on {
+            background-color: var(--green-btn);
+        }
+
+        /* --- BOTTOM SUMMARY MODULES --- */
+        .metrics-summary-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 800px) {
+            .metrics-summary-container { grid-template-columns: 1fr; }
+        }
+
+        .summary-panel-box {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 20px;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .panel-box-title {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+
+        .billing-readout-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--green-text);
+            margin-top: 15px;
+        }
+
+        .billing-rate-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .canvas-graph-wrapper {
+            width: 100%;
+            height: 110px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- SLIDING SYSTEM SETTINGS DRAWER --- */
+        #settings-drawer {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 300px;
+            height: 100%;
+            background-color: #1a1a1a;
+            border-right: 1px solid #252525;
+            z-index: 1500;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #settings-drawer.drawer-open {
+            left: 0;
+        }
+
+        .drawer-top-group h3 {
+            color: var(--cyan-glow);
+            font-size: 1.1rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .drawer-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .setting-input-block {
+            margin-bottom: 20px;
+        }
+
+        .setting-input-block label {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .drawer-input-field {
+            width: 100%;
+            background-color: #111111;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            padding: 10px 12px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .drawer-input-field:focus {
+            border-color: var(--cyan-glow);
+        }
+
+        .drawer-action-btn {
+            width: 100%;
+            background-color: #2b2b2b;
+            border: 1px solid #444444;
+            border-radius: 4px;
+            padding: 12px;
+            color: var(--text-main);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: background-color 0.15s;
+        }
+
+        .drawer-action-btn:hover {
+            background-color: #383838;
+        }
+
+        .drawer-action-btn.danger-btn {
+            background-color: #2e1616;
+            border-color: #5c2424;
+            color: #ff8888;
+        }
+
+        .drawer-action-btn.danger-btn:hover {
+            background-color: #421f1f;
+        }
+
+        .drawer-close-btn {
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        .drawer-close-btn:hover {
+            color: var(--text-main);
+        }
+
+        #drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            z-index: 1400;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>SMART HOME LOGIN</h2>
+            <input type="text" id="login-username" class="login-field" placeholder="Username" value="">
+            <input type="password" id="login-password" class="login-field" placeholder="Password" value="">
+            <button class="login-btn" onclick="executeAuthentication()">ACCESS DASHBOARD</button>
+            <div id="auth-err-msg" class="login-error">Invalid access credentials. Please retry.</div>
+        </div>
+    </div>
+
+    <div id="drawer-backdrop" onclick="toggleSystemDrawer(false)"></div>
+    <div id="settings-drawer">
+        <div class="drawer-top-group">
+            <h3>SYSTEM SETTINGS</h3>
+            <div class="drawer-subtitle">Configure real-time parameters and thresholds</div>
+            
+            <div class="setting-input-block">
+                <label>UNIT RATE (PKR)</label>
+                <input type="number" id="cfg-unit-rate" class="drawer-input-field" placeholder="Enter rate in PKR" value="45">
+            </div>
+
+            <div class="setting-input-block">
+                <label>OVERLOAD LIMIT (WATTS)</label>
+                <input type="number" id="cfg-overload-limit" class="drawer-input-field" placeholder="Enter limit in watts" value="3500">
+            </div>
+
+            <div class="setting-input-block">
+                <label>PEAK START (0-23)</label>
+                <input type="number" id="cfg-peak-start" class="drawer-input-field" placeholder="Enter hour (0-23)" value="19">
+            </div>
+
+            <div class="setting-input-block">
+                <label>PEAK END (0-23)</label>
+                <input type="number" id="cfg-peak-end" class="drawer-input-field" placeholder="Enter hour (0-23)" value="23">
+            </div>
+        </div>
+
+        <div class="drawer-bottom-group">
+            <button class="drawer-action-btn" onclick="fetchHistory()">VIEW HISTORY</button>
+            <button class="drawer-action-btn" onclick="exportPDF()">EXPORT PDF REPORT</button>
+            <button class="drawer-action-btn danger-btn" onclick="terminateSession()">LOGOUT SESSION</button>
+            <button class="drawer-close-btn" onclick="toggleSystemDrawer(false)">CLOSE</button>
+        </div>
+    </div>
+
+    <div id="dashboard-container">
+        <header class="dashboard-header">
+            <button class="settings-trigger-btn" onclick="toggleSystemDrawer(true)">⚙ SETTINGS</button>
+            <span class="brand-title">SMART ENERGY PRO</span>
+            <div class="peak-status-panel">
+                <div class="peak-label" id="timer-state-label">NEXT PEAK STARTS IN</div>
+                <div class="peak-timer" id="countdown-clock">08:58:38</div>
+            </div>
+        </header>
+
+        <section class="hero-gauge-section">
+            <div class="circle-gauge-container">
+                <svg class="circle-gauge-svg">
+                    <circle class="circle-bg-track" cx="100" cy="100" r="85"></circle>
+                    <circle class="circle-active-glow" id="radial-progress-bar" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="200"></circle>
+                </svg>
+                <div class="gauge-center-content">
+                    <span class="label">TOTAL LOAD</span>
+                    <span class="value" id="total-load-readout">581 W</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-divider">
+            <h2 class="section-title">DEVICE COMMAND CENTER</h2>
+            <hr class="horizontal-rule">
+        </section>
+
+        <main class="command-grid" id="appliance-grid-matrix"></main>
+
+        <footer class="metrics-summary-container">
+            <div class="summary-panel-box">
+                <div class="panel-box-title">LIFETIME BILLING</div>
+                <div class="billing-readout-value" id="billing-numeric-display">Rs. 0.00</div>
+                <div class="billing-rate-subtitle" id="billing-rate-subtitle">Rate: 45 PKR/Unit</div>
+            </div>
+            <div class="summary-panel-box">
+                <div class="panel-box-title">LIVE CONSUMPTION GRAPH</div>
+                <div class="canvas-graph-wrapper">
+                    <canvas id="live-telemetry-canvas"></canvas>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Production State Engine Database 
+        let globalSystemState = {
+            unitRate: 45,
+            overloadLimit: 3500,
+            peakStartHour: 19,
+            peakEndHour: 23,
+            accumulatedKwh: 17.075 // Adjusted to base variable: Stores actual energy instead of currency
+        };
+
+        const hardwareAppliances = [
+            { id: "ac", name: "AIR CONDITIONER", baseWatt: 2200, variance: 40, active: false, currentWatt: 0 },
+            { id: "ref", name: "REFRIGERATOR", baseWatt: 250, variance: 8, active: true, currentWatt: 248.3 },
+            { id: "tv", name: "TV", baseWatt: 180, variance: 5, active: true, currentWatt: 180.1 },
+            { id: "lights", name: "LIGHTS", baseWatt: 80, variance: 3, active: true, currentWatt: 81.5 },
+            { id: "fan", name: "FAN", baseWatt: 70, variance: 4, active: true, currentWatt: 70.7 },
+            { id: "pc", name: "GAMING PC", baseWatt: 650, variance: 20, active: false, currentWatt: 0 },
+            { id: "microwave", name: "MICROWAVE", baseWatt: 1300, variance: 35, active: false, currentWatt: 0 },
+            { id: "wash", name: "WASHING MACHINE", baseWatt: 500, variance: 15, active: false, currentWatt: 0 }
+        ];
+
+        let chronologicalHistoryData = Array(40).fill(400); 
+        let telemetryCanvas, canvasContext;
+
+        // --- SESSION AND AUTH MATRIX ---
+        async function executeAuthentication() {
+            const u = document.getElementById("login-username").value;
+            const p = document.getElementById("login-password").value;
+            
+            try {
+                // Fetch to Python backend API
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: u, password: p})
+                });
+                
+                if(res.ok) {
+                    document.getElementById("auth-err-msg").style.display = "none";
+                    document.getElementById("login-overlay").style.opacity = "0";
+                    setTimeout(() => {
+                        document.getElementById("login-overlay").style.display = "none";
+                        const container = document.getElementById("dashboard-container");
+                        container.style.display = "block";
+                        setTimeout(() => container.style.opacity = "1", 50);
+                        initializeRuntimeEngines();
+                    }, 400);
+                } else {
+                    document.getElementById("auth-err-msg").innerText = "Invalid access credentials. Please retry.";
+                    document.getElementById("auth-err-msg").style.display = "block";
+                }
+            } catch(e) {
+                document.getElementById("auth-err-msg").innerText = "Server connection error.";
+                document.getElementById("auth-err-msg").style.display = "block";
+            }
+        }
+
+        function terminateSession() {
+            toggleSystemDrawer(false);
+            document.getElementById("dashboard-container").style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById("dashboard-container").style.display = "none";
+                const login = document.getElementById("login-overlay");
+                login.style.display = "flex";
+                setTimeout(() => login.style.opacity = "1", 50);
+            }, 500);
+        }
+
+        // --- INTERFACE TRANSITIONS Drawer Elements ---
+        function toggleSystemDrawer(shouldOpen) {
+            const drawer = document.getElementById("settings-drawer");
+            const backdrop = document.getElementById("drawer-backdrop");
+            if (shouldOpen) {
+                drawer.classList.add("drawer-open");
+                backdrop.style.display = "block";
+            } else {
+                drawer.classList.remove("drawer-open");
+                backdrop.style.display = "none";
+                commitConfigurationModifications();
+            }
+        }
+
+        function commitConfigurationModifications() {
+            globalSystemState.unitRate = parseFloat(document.getElementById("cfg-unit-rate").value) || 45;
+            globalSystemState.overloadLimit = parseFloat(document.getElementById("cfg-overload-limit").value) || 3500;
+            globalSystemState.peakStartHour = parseInt(document.getElementById("cfg-peak-start").value) || 19;
+            globalSystemState.peakEndHour = parseInt(document.getElementById("cfg-peak-end").value) || 23;
+
+            document.getElementById("billing-rate-subtitle").innerText = `Rate: ${globalSystemState.unitRate} PKR/Unit`;
+            
+            // Instantly recalculate bill based on new unit rate
+            const updatedBill = globalSystemState.accumulatedKwh * globalSystemState.unitRate;
+            document.getElementById("billing-numeric-display").innerText = `Rs. ${updatedBill.toFixed(2)}`;
+        }
+
+        // --- HISTORY AND PDF REQUESTS ---
+        async function fetchHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                let msg = "Historical Records:\n\n";
+                if(data.length > 0) {
+                    data.forEach(row => msg += `${row.date}: ${row.kwh.toFixed(2)} kWh, Rs. ${row.cost.toFixed(2)}\n`);
+                } else {
+                    msg += "No historical records found yet.";
+                }
+                alert(msg);
+            } catch(e) {
+                alert("Failed to connect to backend history database.");
+            }
+        }
+
+        function exportPDF() {
+            window.open('/api/export_pdf', '_blank');
+        }
+
+        // --- APPLIANCE RENDER GRID MATRIX ---
+        function generateApplianceGridMatrix() {
+            const grid = document.getElementById("appliance-grid-matrix");
+            grid.innerHTML = "";
+
+            hardwareAppliances.forEach((appliance, matrixIndex) => {
+                const card = document.createElement("div");
+                card.className = `device-card ${appliance.active ? 'active-state' : ''}`;
+                card.id = `card-node-${appliance.id}`;
+
+                card.innerHTML = `
+                    <div class="card-header-row">
+                        <span class="favorite-star">★</span>
+                        <span class="device-title">${appliance.name}</span>
+                    </div>
+                    <div class="device-wattage" id="watt-readout-${appliance.id}">
+                        ${appliance.active ? appliance.currentWatt.toFixed(1) + ' W' : '0.0 W'}
+                    </div>
+                    <button class="card-action-btn ${appliance.active ? 'turn-off' : 'turn-on'}" 
+                            id="btn-node-${appliance.id}" 
+                            onclick="toggleApplianceStateIndex(${matrixIndex})">
+                        ${appliance.active ? 'TURN OFF' : 'TURN ON'}
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleApplianceStateIndex(indexTarget) {
+            const target = hardwareAppliances[indexTarget];
+            target.active = !target.active;
+
+            if (target.active) {
+                target.currentWatt = target.baseWatt + (Math.random() * target.variance * 2 - target.variance);
+            } else {
+                target.currentWatt = 0;
+            }
+
+            const cardNode = document.getElementById(`card-node-${target.id}`);
+            const wattNode = document.getElementById(`watt-readout-${target.id}`);
+            const btnNode = document.getElementById(`btn-node-${target.id}`);
+
+            if (target.active) {
+                cardNode.classList.add("active-state");
+                btnNode.className = "card-action-btn turn-off";
+                btnNode.innerText = "TURN OFF";
+            } else {
+                cardNode.classList.remove("active-state");
+                btnNode.className = "card-action-btn turn-on";
+                btnNode.innerText = "TURN ON";
+                wattNode.innerText = "0.0 W";
+            }
+            executeCalculatedMetricsUpdate();
+        }
+
+        // --- MATH ENGINES AND CALCULATION MODULES ---
+        function executeCalculatedMetricsUpdate() {
+            let aggregatedLoadSum = 0;
+
+            hardwareAppliances.forEach(appliance => {
+                if (appliance.active) {
+                    appliance.currentWatt = appliance.baseWatt + (Math.random() * appliance.variance - (appliance.variance / 2));
+                    const wattNode = document.getElementById(`watt-readout-${appliance.id}`);
+                    if (wattNode) wattNode.innerText = `${appliance.currentWatt.toFixed(1)} W`;
+                    aggregatedLoadSum += appliance.currentWatt;
+                }
+            });
+
+            // OVERLOAD SHUTDOWN LOGIC (Fix #1)
+            if (aggregatedLoadSum > globalSystemState.overloadLimit) {
+                let highestAppliance = null;
+                let highestWatt = -1;
+                let targetIndex = -1;
+                
+                // Find highest active consumer
+                hardwareAppliances.forEach((app, idx) => {
+                    if (app.active && app.currentWatt > highestWatt) {
+                        highestWatt = app.currentWatt;
+                        highestAppliance = app;
+                        targetIndex = idx;
+                    }
+                });
+
+                if (targetIndex !== -1) {
+                    // Turn off node directly without triggering endless loop
+                    const target = hardwareAppliances[targetIndex];
+                    target.active = false;
+                    target.currentWatt = 0;
+                    
+                    document.getElementById(`card-node-${target.id}`).classList.remove("active-state");
+                    const btnNode = document.getElementById(`btn-node-${target.id}`);
+                    btnNode.className = "card-action-btn turn-on";
+                    btnNode.innerText = "TURN ON";
+                    document.getElementById(`watt-readout-${target.id}`).innerText = "0.0 W";
+
+                    alert(`⚠️ OVERLOAD LIMIT EXCEEDED! Auto-shutting down: ${target.name}`);
+                    aggregatedLoadSum -= highestWatt; // Adjust sum visually
+                }
+            }
+
+            document.getElementById("total-load-readout").innerText = `${Math.round(aggregatedLoadSum)} W`;
+
+            // Radial Ring Gauge Updates 
+            const radialTrack = document.getElementById("radial-progress-bar");
+            const structuralLimit = globalSystemState.overloadLimit;
+            const percentageUsed = Math.min(aggregatedLoadSum / structuralLimit, 1);
+            
+            const arcOffsetValue = 534 - (percentageUsed * 534);
+            radialTrack.style.strokeDashoffset = arcOffsetValue;
+
+            // Live Accumulative Financial Calculation Updates (Fix #2 tracking KWh instead of price directly)
+            globalSystemState.accumulatedKwh += (aggregatedLoadSum / 1000) / 3600;
+            const currentTotalBill = globalSystemState.accumulatedKwh * globalSystemState.unitRate;
+            document.getElementById("billing-numeric-display").innerText = `Rs. ${currentTotalBill.toFixed(2)}`;
+
+            // Telemetry Queue Vector Shifting
+            chronologicalHistoryData.push(aggregatedLoadSum);
+            if (chronologicalHistoryData.length > 50) chronologicalHistoryData.shift();
+            renderVectorStrokeTelemetry();
+        }
+
+        // --- INTERACTIVE VECTOR TELEMETRY CANVAS ---
+        function initializeCanvasViewport() {
+            telemetryCanvas = document.getElementById("live-telemetry-canvas");
+            canvasContext = telemetryCanvas.getContext("2d");
+            resizeTelemetryViewport();
+            window.addEventListener("resize", resizeTelemetryViewport);
+        }
+
+        function resizeTelemetryViewport() {
+            const boxModel = telemetryCanvas.parentElement;
+            telemetryCanvas.width = boxModel.clientWidth;
+            telemetryCanvas.height = boxModel.clientHeight;
+            renderVectorStrokeTelemetry();
+        }
+
+        function renderVectorStrokeTelemetry() {
+            if (!canvasContext) return;
+            const w = telemetryCanvas.width;
+            const h = telemetryCanvas.height;
+            canvasContext.clearRect(0, 0, w, h);
+
+            // Vector Grid Lines Array Loop
+            canvasContext.strokeStyle = "#161616";
+            canvasContext.lineWidth = 1;
+            for(let step = 1; step < 4; step++) {
+                canvasContext.beginPath();
+                canvasContext.moveTo(0, (h / 4) * step);
+                canvasContext.lineTo(w, (h / 4) * step);
+                canvasContext.stroke();
+            }
+
+            if (chronologicalHistoryData.length === 0) return;
+
+            canvasContext.beginPath();
+            canvasContext.strokeStyle = "#00f2ff";
+            canvasContext.lineWidth = 2;
+            canvasContext.lineJoin = "round";
+
+            const pointStepSpacing = w / (chronologicalHistoryData.length - 1);
+            const peakLimitBoundary = Math.max(...chronologicalHistoryData, globalSystemState.overloadLimit);
+
+            chronologicalHistoryData.forEach((telemetryValue, valueIndex) => {
+                const normalizedX = valueIndex * pointStepSpacing;
+                const normalizedY = h - ((telemetryValue / peakLimitBoundary) * (h - 10)) - 5;
+
+                if (valueIndex === 0) {
+                    canvasContext.moveTo(normalizedX, normalizedY);
+                } else {
+                    canvasContext.lineTo(normalizedX, normalizedY);
+                }
+            });
+
+            canvasContext.stroke();
+        }
+
+        // --- TEMPORAL CLOCK EXTRACTOR MATRIX ---
+        function executeTemporalChronographUpdate() {
+            const dateInstance = new Date();
+            const hour = dateInstance.getHours();
+            const min = dateInstance.getMinutes();
+            const sec = dateInstance.getSeconds();
+
+            const pStart = globalSystemState.peakStartHour;
+            const pEnd = globalSystemState.peakEndHour;
+
+            let stateLabelString = "NEXT PEAK STARTS IN";
+            let deltaHours = 0, deltaMinutes = 0, deltaSeconds = 0;
+
+            const targetActivePeakState = (hour >= pStart && hour < pEnd);
+
+            if (targetActivePeakState) {
+                stateLabelString = "PEAK PERIOD ACTIVE EXITS IN";
+                deltaHours = (pEnd - 1) - hour;
+                deltaMinutes = 59 - min;
+                deltaSeconds = 59 - sec;
+            } else {
+                stateLabelString = "NEXT PEAK STARTS IN";
+                if (hour < pStart) {
+                    deltaHours = (pStart - 1) - hour;
+                } else {
+                    deltaHours = (24 - hour) + (pStart - 1);
+                }
+                deltaMinutes = 59 - min;
+                deltaSeconds = 59 - sec;
+            }
+
+            const stringHr = String(deltaHours).padStart(2, '0');
+            const stringMin = String(deltaMinutes).padStart(2, '0');
+            const stringSec = String(deltaSeconds).padStart(2, '0');
+
+            document.getElementById("timer-state-label").innerText = stateLabelString;
+            document.getElementById("countdown-clock").innerText = `${stringHr}:${stringMin}:${stringSec}`;
+        }
+
+        // --- PROGRAM ENGINE LOGIC CORE RUNTIME ---
+        function initializeRuntimeEngines() {
+            generateApplianceGridMatrix();
+            initializeCanvasViewport();
+            
+            setInterval(executeCalculatedMetricsUpdate, 1000);
+            setInterval(executeTemporalChronographUpdate, 1000);
+            
+            executeCalculatedMetricsUpdate();
+            executeTemporalChronographUpdate();
+        }
+    </script>
+</body>
+</html>
