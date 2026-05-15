@@ -18,6 +18,7 @@ Secure Authentication: Integrated login system and password management utility.
 Plaintext
 
 SmartEnergyProject/
+├── host_server.py          # Flask backend & QObject bridge logic(web app)
 ├── main.py                 # Core application & Bridge logic
 ├── change_pass.py          # Utility for updating login credentials
 ├── requirements.txt        # Required Python libraries
@@ -27,43 +28,71 @@ SmartEnergyProject/
 │   ├── db_manager.py       # Database operations (SQL)
 │   └── energy_logic.py     # Energy math and billing logic
 └── frontend/               # View Layer
-    └── dashboard.qml       # QML User Interface design
+    ├── dashboard.qml       # QML User Interface design
+    └── index.html          # Dashboard User Interface(web app)
 🛠️ Installation & Setup
 Clone/Download the project folder.
 
 Create a Virtual Environment:
-
-Bash
-
 python -m venv venv
+
 Activate the Environment:
-
 Windows: venv\Scripts\activate
-
 Mac/Linux: source venv/bin/activate
 
 Install Dependencies:
-
-Bash
-
 pip install -r requirements.txt
+
 🚦 Running the Application
 To experience the full live simulation, you must run two processes:
-
 Start the Data Simulator:
 Open a terminal and run:
-
-Bash
-
 python backend/data_generator.py
+
 Launch the Dashboard:
 Open a second terminal and run:
-
-Bash
-
 python main.py
 🔐 Default Credentials
 Username: admin
-
 Password: admin123
+(Use change_pass.py to update these for security).
+
+
+->Locall Host
+🛠️ Installation & Setup
+Clone/Download the project folder.
+
+Create a Virtual Environment:
+python -m venv venv
+Activate the Environment:
+Windows: venv\Scripts\activate
+Mac/Linux: source venv/bin/activate
+
+Install Dependencies:
+pip install -r requirements.txt
+
+🚦 Running the WEB Application
+To run the system on your local machine and access the interface via a web browser, follow these steps:
+
+1. Initialize the System
+The application requires two components to run simultaneously:
+
+Step A: Start the Server
+Open a terminal and run the host script. This initializes the database and starts the Flask web server.
+python host_server.py
+The server will be hosted at http://localhost:5000.
+
+Step B: Start the Data Simulator
+Open a second terminal window, activate the virtual environment, and run the simulator to begin generating live energy data.
+python backend/data_generator.py
+
+2. Access the Dashboard
+Once both scripts are active, open a web browser and navigate to:
+http://localhost:5000.
+NOTE:(keep in mind that your desktop(on which you install it) and the device(on which you acess it by browser) both must be connected to same WIFI/Internet)
+
+3. Default Credentials
+Login to the dashboard using these default settings:
+Username: admin
+Password: password123
 (Use change_pass.py to update these for security).
